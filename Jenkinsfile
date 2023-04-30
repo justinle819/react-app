@@ -91,24 +91,24 @@ pipeline {
         //     }
         // }
 
-        // stage("Check HTTP Response") {
-        //     steps {
-        //         script {
-        //             final String url = "http://localhost:1233"
+        stage("Check HTTP Response") {
+            steps {
+                script {
+                    final String url = "http://localhost:1233"
                     
-        //             final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
+                    final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
                     
-        //             if (response == "200") {
-        //                 echo response
-        //                 println "Successful Response Code" 
-        //             } else {
-        //                 echo response
-        //                 println "Error Response Code" 
-        //             }
+                    if (response == "200") {
+                        echo response
+                        println "Successful Response Code" 
+                    } else {
+                        echo response
+                        println "Error Response Code" 
+                    }
 
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
         
         // stage('DeployToProduction') {
         //     when {
@@ -130,24 +130,24 @@ pipeline {
         //     }
         // }
 
-        // stage('DeployToProduction') {
-        //     when {
-        //         branch 'main'
-        //     }
-        //     steps {
-        //         input 'Does the staging environment look OK? Did You get 200 response?'
-        //          milestone(1)
-        //             script {
-        //                 sh "docker pull justinle819/react-app:latest"
-        //                 try {
-        //                     sh "docker stop react-app"
-        //                     sh "docker rm react-app"
-        //                 } catch (err) {
-        //                     echo: 'caught error: $err'
-        //                 }
-        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
-        //             }
-        //     }
-        // }
+        stage('DeployToProduction') {
+            when {
+                branch 'main'
+            }
+            steps {
+                input 'Does the staging environment look OK? Did You get 200 response?'
+                 milestone(1)
+                    script {
+                        sh "docker pull justinle819/react-app:latest"
+                        try {
+                            sh "docker stop react-app"
+                            sh "docker rm react-app"
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
+                    }
+            }
+        }
     }
 }
