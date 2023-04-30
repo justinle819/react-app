@@ -22,14 +22,14 @@ pipeline {
                 }
             }
         }
-        stage('Login') {
-            when {
-                branch 'main'
-            }
-			steps {
-				sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
-			}
-		}
+        // stage('Login') {
+        //     when {
+        //         branch 'main'
+        //     }
+		// 	steps {
+		// 		sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
+		// 	}
+		// }
         // stage('Push Docker Image') {
         //     when {
         //         branch 'main'
@@ -43,14 +43,36 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Push') {
+        
+        stage('Push Docker Image') {
             when {
                 branch 'main'
             }
+            steps {
+				sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
+			}
 			steps {
 				sh 'docker push justinle819/react-app:latest'
 			}
 		}
+
+        stage('DeployToStaging') {
+            when {
+                branch 'main'
+            }
+            steps {
+                    script {
+                        sh "docker pull justinle819/react-app:latest"
+                        try {
+                            sh "docker stop react-app"
+                            sh "docker rm react-app"
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
+                    }
+            }
+        }
         //  stage('DeployToStaging') {
         //     when {
         //         branch 'main'
@@ -68,25 +90,25 @@ pipeline {
         //             }
         //     }
         // }
-        
-        // stage("Check HTTP Response") {
-        //     steps {
-        //         script {
-        //             final String url = "http://localhost:1233"
-                    
-        //             final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
-                    
-        //             if (response == "200") {
-        //                 echo response
-        //                 println "Successful Response Code" 
-        //             } else {
-        //                 echo response
-        //                 println "Error Response Code" 
-        //             }
 
-        //         }
-        //     }
-        // }
+        stage("Check HTTP Response") {
+            steps {
+                script {
+                    final String url = "http://localhost:1233"
+                    
+                    final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
+                    
+                    if (response == "200") {
+                        echo response
+                        println "Successful Response Code" 
+                    } else {
+                        echo response
+                        println "Error Response Code" 
+                    }
+
+                }
+            }
+        }
         
         // stage('DeployToProduction') {
         //     when {
@@ -107,5 +129,25 @@ pipeline {
         //             }
         //     }
         // }
+
+        stage('DeployToProduction') {
+            when {
+                branch 'main'
+            }
+            steps {
+                input 'Does the staging environment look OK? Did You get 200 response?'
+                 milestone(1)
+                    script {
+                        sh "docker pull justinle819/react-app:latest"
+                        try {
+                            sh "docker stop react-app"
+                            sh "docker rm react-app"
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
+                    }
+            }
+        }
     }
 }
