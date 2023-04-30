@@ -9,6 +9,7 @@ pipeline {
                 archiveArtifacts artifacts: 'dist/reactApp'
             }
         }
+
         stage('Build Docker Image') {
             when {
                 branch 'main'
@@ -22,74 +23,68 @@ pipeline {
                 }
             }
         }
-        // stage('Login') {
-        //     when {
-        //         branch 'main'
-        //     }
-		// 	steps {
-		// 		sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
-		// 	}
-		// }
+
         // stage('Push Docker Image') {
         //     when {
         //         branch 'main'
         //     }
-        //     steps {
+		// 	steps {
         //         script {
-        //             docker.withRegistry('https://registry-1.docker.io', 'justinle819') {
-        //                 app.push("${env.BUILD_NUMBER}")
-        //                 app.push("latest")
-        //             }
+        //             sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
+        //             sh 'docker push justinle819/react-app:latest'
         //         }
-        //     }
-        // }
-        
+		// 	}
+		// }
+
         stage('Push Docker Image') {
             when {
                 branch 'main'
             }
-			steps {
-                script {
-                    sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
-                    sh 'docker push justinle819/react-app:latest'
-                }
-			}
-		}
-
-        stage('DeployToStaging') {
-            when {
-                branch 'main'
-            }
             steps {
-                    script {
-                        sh "docker pull justinle819/react-app:latest"
-                        try {
-                            sh "docker stop react-app"
-                            sh "docker rm react-app"
-                        } catch (err) {
-                            echo: 'caught error: $err'
-                        }
-                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com/v2', 'justinle819') {
+                        app.push("${env.BUILD_NUMBER}")
+                        app.push("latest")
                     }
+                }
             }
         }
-        //  stage('DeployToStaging') {
+        
+        // stage('DeployToStaging') {
         //     when {
         //         branch 'main'
         //     }
         //     steps {
         //             script {
-        //                 sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 sh "docker pull justinle819/react-app:latest"
         //                 try {
         //                     sh "docker stop react-app"
         //                     sh "docker rm react-app"
         //                 } catch (err) {
         //                     echo: 'caught error: $err'
         //                 }
-        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
         //             }
         //     }
         // }
+
+         stage('DeployToStaging') {
+            when {
+                branch 'main'
+            }
+            steps {
+                    script {
+                        sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
+                        try {
+                            sh "docker stop react-app"
+                            sh "docker rm react-app"
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
+                    }
+            }
+        }
 
         stage("Check HTTP Response") {
             steps {
@@ -109,7 +104,7 @@ pipeline {
                 }
             }
         }
-        
+
         // stage('DeployToProduction') {
         //     when {
         //         branch 'main'
@@ -118,14 +113,14 @@ pipeline {
         //         input 'Does the staging environment look OK? Did You get 200 response?'
         //          milestone(1)
         //             script {
-        //                 sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 sh "docker pull justinle819/react-app:latest"
         //                 try {
         //                     sh "docker stop react-app"
         //                     sh "docker rm react-app"
         //                 } catch (err) {
         //                     echo: 'caught error: $err'
         //                 }
-        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
         //             }
         //     }
         // }
@@ -138,14 +133,14 @@ pipeline {
                 input 'Does the staging environment look OK? Did You get 200 response?'
                  milestone(1)
                     script {
-                        sh "docker pull justinle819/react-app:latest"
+                        sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
                         try {
                             sh "docker stop react-app"
                             sh "docker rm react-app"
                         } catch (err) {
                             echo: 'caught error: $err'
                         }
-                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
+                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
                     }
             }
         }
