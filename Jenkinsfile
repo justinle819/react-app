@@ -24,18 +24,6 @@ pipeline {
             }
         }
 
-        // stage('Push Docker Image') {
-        //     when {
-        //         branch 'main'
-        //     }
-		// 	steps {
-        //         script {
-        //             sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
-        //             sh 'docker push justinle819/react-app:latest'
-        //         }
-		// 	}
-		// }
-
         stage('Push Docker Image') {
             when {
                 branch 'main'
@@ -49,26 +37,8 @@ pipeline {
                 }
             }
         }
-        
-        // stage('DeployToStaging') {
-        //     when {
-        //         branch 'main'
-        //     }
-        //     steps {
-        //             script {
-        //                 sh "docker pull justinle819/react-app:latest"
-        //                 try {
-        //                     sh "docker stop react-app"
-        //                     sh "docker rm react-app"
-        //                 } catch (err) {
-        //                     echo: 'caught error: $err'
-        //                 }
-        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
-        //             }
-        //     }
-        // }
 
-         stage('DeployToStaging') {
+        stage('DeployToStaging') {
             when {
                 branch 'main'
             }
@@ -104,26 +74,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('DeployToProduction') {
-        //     when {
-        //         branch 'main'
-        //     }
-        //     steps {
-        //         input 'Does the staging environment look OK? Did You get 200 response?'
-        //          milestone(1)
-        //             script {
-        //                 sh "docker pull justinle819/react-app:latest"
-        //                 try {
-        //                     sh "docker stop react-app"
-        //                     sh "docker rm react-app"
-        //                 } catch (err) {
-        //                     echo: 'caught error: $err'
-        //                 }
-        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:latest"
-        //             }
-        //     }
-        // }
 
         stage('DeployToProduction') {
             when {
