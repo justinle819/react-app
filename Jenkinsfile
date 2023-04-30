@@ -22,74 +22,90 @@ pipeline {
                 }
             }
         }
-        stage('Push Docker Image') {
+        stage('Login') {
             when {
                 branch 'main'
             }
-            steps {
-                script {
-                    docker.withRegistry('https://auth.docker.io', 'justinle819') {
-                        app.push("${env.BUILD_NUMBER}")
-                        app.push("latest")
-                    }
-                }
-            }
-        }
-         stage('DeployToStaging') {
+			steps {
+				sh 'docker login -u justinle819 -p dckr_pat_AmuStpv25hHVKBW6nyEA9L7_kzQ'
+			}
+		}
+        // stage('Push Docker Image') {
+        //     when {
+        //         branch 'main'
+        //     }
+        //     steps {
+        //         script {
+        //             docker.withRegistry('https://registry-1.docker.io', 'justinle819') {
+        //                 app.push("${env.BUILD_NUMBER}")
+        //                 app.push("latest")
+        //             }
+        //         }
+        //     }
+        // }
+        stage('Push') {
             when {
                 branch 'main'
             }
-            steps {
-                    script {
-                        sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
-                        try {
-                            sh "docker stop react-app"
-                            sh "docker rm react-app"
-                        } catch (err) {
-                            echo: 'caught error: $err'
-                        }
-                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
-                    }
-            }
-        }
+			steps {
+				sh 'docker push justinle819/react-app:latest'
+			}
+		}
+        //  stage('DeployToStaging') {
+        //     when {
+        //         branch 'main'
+        //     }
+        //     steps {
+        //             script {
+        //                 sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 try {
+        //                     sh "docker stop react-app"
+        //                     sh "docker rm react-app"
+        //                 } catch (err) {
+        //                     echo: 'caught error: $err'
+        //                 }
+        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
+        //             }
+        //     }
+        // }
         
-        stage("Check HTTP Response") {
-            steps {
-                script {
-                    final String url = "http://localhost:1233"
+        // stage("Check HTTP Response") {
+        //     steps {
+        //         script {
+        //             final String url = "http://localhost:1233"
                     
-                    final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
+        //             final String response = sh(script: "curl -o /dev/null -s -w '%{http_code}\\n' $url", returnStdout: true).trim()
                     
-                    if (response == "200") {
-                        echo response
-                        println "Successful Response Code" 
-                    } else {
-                        echo response
-                        println "Error Response Code" 
-                    }
+        //             if (response == "200") {
+        //                 echo response
+        //                 println "Successful Response Code" 
+        //             } else {
+        //                 echo response
+        //                 println "Error Response Code" 
+        //             }
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
         
-        stage('DeployToProduction') {
-            when {
-                branch 'main'
-            }
-            steps {
-                input 'Does the staging environment look OK? Did You get 200 response?'
-                 milestone(1)
-                    script {
-                        sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
-                        try {
-                            sh "docker stop react-app"
-                            sh "docker rm react-app"
-                        } catch (err) {
-                            echo: 'caught error: $err'
-                        }
-                        sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
-                    }
-            }
-        }
+        // stage('DeployToProduction') {
+        //     when {
+        //         branch 'main'
+        //     }
+        //     steps {
+        //         input 'Does the staging environment look OK? Did You get 200 response?'
+        //          milestone(1)
+        //             script {
+        //                 sh "docker pull justinle819/react-app:${env.BUILD_NUMBER}"
+        //                 try {
+        //                     sh "docker stop react-app"
+        //                     sh "docker rm react-app"
+        //                 } catch (err) {
+        //                     echo: 'caught error: $err'
+        //                 }
+        //                 sh "docker run --restart always --name react-app -p 1233:80 -d justinle819/react-app:${env.BUILD_NUMBER}"
+        //             }
+        //     }
+        // }
     }
 }
